@@ -7,7 +7,7 @@
 ### 👥 Anggota Tim
 | No | Nama | NIM | Peran |
 |----|------|-----|-------|
-| 1 | Esa Khafidotul Khusna Rois | - | Data Engineer 1 (Hadoop/Ingestion) |
+| 1 | Esa Khafidotul Khusna Rois | 245150407111069| Data Engineer 1 (Hadoop/Ingestion) |
 | 2 | Naufal Zahdan Zulfakar | 245150401111003 | Data Engineer 2 (Spark Processing) |
 | 3 | M Takhta Ali Sulthon | 235150400111055 | ML Engineer (Modeling & Analytics) |
 | 4 | Nikita Tsalis Akmalinda Yanisa | 235150401111041 | Project Manager & Documentation |
