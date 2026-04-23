@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 📊 Analisis Performa Kampanye Marketing
 ## Klasifikasi dan Regresi Berbasis Spark MLlib pada Ekosistem Big Data ERP CRM-Marketing
 
@@ -114,3 +115,7 @@ BigData/
 
 ## 📄 Lisensi Dataset
 Apache 2.0 — Dataset dari [Kaggle](https://www.kaggle.com/datasets/mirzayasirabdullah07/marketing-campaign-performance-dataset)
+=======
+# bigdata6-marketing-analytics
+Analisis Performa Kampanye Marketing menggunakan Spark MLlib
+>>>>>>> 42da6ae4ad0f95a8f0addd5090a8552986ecb26c
