@@ -27,3 +27,8 @@ kaggle>=1.5.0
 
 # Utility
 tqdm>=4.64.0
+
+# Streamlit
+streamlit>=1.57.0
+boto3>=1.43.3
+pyarrow>=24.0.0

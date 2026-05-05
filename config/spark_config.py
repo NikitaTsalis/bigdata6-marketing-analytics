@@ -2,6 +2,7 @@
 Konfigurasi Spark Session untuk Proyek Big Data Marketing Analytics
 ==================================================================
 File ini berisi konfigurasi yang digunakan di seluruh notebook.
+Menggunakan Medallion Architecture: Bronze → Silver → Gold
 Sesuaikan parameter sesuai dengan environment yang digunakan.
 """
 
@@ -22,16 +23,17 @@ SPARK_MASTER = "local[*]"  # Gunakan semua core yang tersedia
 
 HDFS_NAMENODE = "hdfs://localhost:9000"  # Sesuaikan dengan NameNode address
 
-# Direktori HDFS
+# Direktori HDFS — Medallion Architecture
 HDFS_BASE_DIR = "/user/hadoop/marketing"
-HDFS_RAW_DIR = f"{HDFS_BASE_DIR}/raw"
-HDFS_PROCESSED_DIR = f"{HDFS_BASE_DIR}/processed"
-HDFS_MODEL_DIR = f"{HDFS_BASE_DIR}/model"
+HDFS_BRONZE_DIR = f"{HDFS_BASE_DIR}/bronze"
+HDFS_SILVER_DIR = f"{HDFS_BASE_DIR}/silver"
+HDFS_GOLD_DIR = f"{HDFS_BASE_DIR}/gold"
+HDFS_MODEL_DIR = f"{HDFS_BASE_DIR}/models"
 
 # Path file di HDFS
-HDFS_RAW_CSV = f"{HDFS_RAW_DIR}/marketing_campaign_performance.csv"
-HDFS_PROCESSED_PARQUET = f"{HDFS_PROCESSED_DIR}/marketing_campaign_cleaned.parquet"
-HDFS_FEATURE_ENGINEERED_PARQUET = f"{HDFS_PROCESSED_DIR}/marketing_campaign_features.parquet"
+HDFS_BRONZE_CSV = f"{HDFS_BRONZE_DIR}/marketing_campaign_performance.csv"
+HDFS_SILVER_CLEANED_PARQUET = f"{HDFS_SILVER_DIR}/marketing_campaign_cleaned.parquet"
+HDFS_SILVER_FEATURES_PARQUET = f"{HDFS_SILVER_DIR}/marketing_campaign_features.parquet"
 
 # ============================================
 # KONFIGURASI MINIO (Object Storage / Data Lake)
@@ -39,13 +41,33 @@ HDFS_FEATURE_ENGINEERED_PARQUET = f"{HDFS_PROCESSED_DIR}/marketing_campaign_feat
 
 MINIO_ENDPOINT = "localhost:9000"       # Endpoint MinIO
 MINIO_ACCESS_KEY = "minioadmin"          # Access key (default)
-MINIO_SECRET_KEY = "minioadmin"          # Secret key (default)
+MINIO_SECRET_KEY = "minioadmin123"       # Secret key (sesuai docker-compose)
 MINIO_BUCKET = "marketing-data"          # Nama bucket
 MINIO_USE_SSL = False                    # SSL (False untuk development)
 
-# Path di MinIO
-MINIO_RAW_PATH = "raw/marketing_campaign_performance.csv"
-MINIO_PROCESSED_PATH = "processed/"
+# ============================================
+# MEDALLION ARCHITECTURE PATHS (MinIO)
+# ============================================
+
+# Bronze Layer — Data mentah, belum ditransformasi
+MINIO_BRONZE_DIR = "bronze/"
+MINIO_BRONZE_CSV = "bronze/marketing_campaign_performance.csv"
+
+# Silver Layer — Data bersih, tervalidasi, dan enriched
+MINIO_SILVER_DIR = "silver/"
+MINIO_SILVER_CLEANED = "silver/marketing_campaign_cleaned"
+MINIO_SILVER_FEATURES = "silver/marketing_campaign_features"
+
+# Gold Layer — Data agregasi bisnis, siap dikonsumsi
+MINIO_GOLD_DIR = "gold/"
+MINIO_GOLD_PREDICTIONS = "gold/predictions"
+MINIO_GOLD_CHANNEL_SUMMARY = "gold/channel_performance_summary"
+MINIO_GOLD_CAMPAIGN_REPORT = "gold/campaign_profitability_report"
+
+# Models — Artefak model ML
+MINIO_MODELS_DIR = "models/"
+MINIO_MODEL_RF = "models/random_forest_classifier"
+MINIO_MODEL_LR = "models/linear_regression"
 
 # ============================================
 # KONFIGURASI SPARK SESSION
@@ -73,7 +95,9 @@ SPARK_CONFIG = {
     "spark.hadoop.fs.s3a.secret.key": MINIO_SECRET_KEY,
     "spark.hadoop.fs.s3a.path.style.access": "true",
     "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem",
-}
+    "spark.hadoop.fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.SimpleAWSCredentialsProvider",
+    "spark.hadoop.fs.s3a.connection.ssl.enabled": "false",
+    }
 
 # ============================================
 # KONFIGURASI DATASET

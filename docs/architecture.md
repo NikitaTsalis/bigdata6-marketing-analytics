@@ -18,9 +18,10 @@
 │  │         DATA LAKE (MinIO)           │                                    │
 │  │                                     │                                    │
 │  │  📁 marketing-data/                 │                                    │
-│  │  ├── raw/         ← CSV mentah      │                                    │
-│  │  ├── processed/   ← Parquet bersih  │                                    │
-│  │  └── model/       ← Model ML        │                                    │
+│  │  ├── bronze/      ← CSV mentah      │                                    │
+│  │  ├── silver/      ← Parquet bersih  │                                    │
+│  │  ├── gold/        ← Agregasi bisnis │                                    │
+│  │  └── models/      ← Model ML        │                                    │
 │  └──────────────┬──────────────────────┘                                    │
 │                 │                                                            │
 │                 ▼                                                            │
@@ -28,9 +29,10 @@
 │  │      HDFS (Distributed Storage)     │                                    │
 │  │                                     │                                    │
 │  │  /user/hadoop/marketing/            │                                    │
-│  │  ├── raw/         ← CSV dari MinIO  │                                    │
-│  │  ├── processed/   ← Parquet         │                                    │
-│  │  └── model/       ← Model tersimpan │                                    │
+│  │  ├── bronze/      ← CSV dari MinIO  │                                    │
+│  │  ├── silver/      ← Parquet         │                                    │
+│  │  ├── gold/        ← Prediksi        │                                    │
+│  │  └── models/      ← Model tersimpan │                                    │
 │  │                                     │                                    │
 │  │  NameNode (1) + DataNode (2+)       │                                    │
 │  └──────────────┬──────────────────────┘                                    │
@@ -82,12 +84,13 @@
 | Upload ke Data Lake | MinIO Client (mc) | Upload CSV ke MinIO bucket |
 | Upload ke HDFS | PySpark / hadoop fs | Transfer data dari MinIO ke HDFS |
 
-### 2.2 Storage Layer
-| Komponen | Teknologi | Deskripsi |
-|----------|-----------|-----------|
-| Data Lake | MinIO | Object storage S3-compatible untuk raw data |
-| Distributed Storage | HDFS | Penyimpanan terdistribusi untuk processing |
-| Format Data | CSV → Parquet | Konversi ke format kolumnar untuk efisiensi |
+### 2.2 Storage Layer (Medallion Architecture)
+| Komponen | Layer | Format | Deskripsi |
+|----------|-------|--------|-----------|
+| Data Lake / HDFS | Bronze | CSV | Data mentah, tanpa modifikasi (*Single Source of Truth*) |
+| Data Lake / HDFS | Silver | Parquet | Data yang telah dibersihkan, di-filter, dan *feature engineered* |
+| Data Lake / HDFS | Gold | Parquet | Data teragregasi untuk bisnis, dan hasil prediksi ML |
+| Data Lake / HDFS | Models | Spark ML | Artefak model ML yang sudah di-train |
 
 ### 2.3 Processing Layer
 | Komponen | Teknologi | Deskripsi |
@@ -118,22 +121,21 @@
 ```mermaid
 graph TD
     A[Kaggle Dataset CSV] -->|download| B[Local Storage]
-    B -->|mc cp| C[MinIO Bucket - raw/]
-    C -->|PySpark read| D[Spark DataFrame]
-    D -->|Clean & Transform| E[Processed DataFrame]
-    E -->|write parquet| F[HDFS/MinIO - processed/]
-    F -->|Feature Engineering| G[Feature DataFrame]
-    G -->|train/test split| H{Split Data}
-    H -->|80%| I[Training Set]
-    H -->|20%| J[Test Set]
-    I -->|fit| K[Random Forest Classifier]
-    I -->|fit| L[Linear Regression]
-    K -->|evaluate| M[Classification Metrics]
-    L -->|evaluate| N[Regression Metrics]
-    K -->|save| O[HDFS/MinIO - model/]
-    L -->|save| O
-    M -->|visualize| P[Jupyter Dashboard]
-    N -->|visualize| P
+    B -->|Ingestion| C[MinIO - Bronze Layer]
+    C -->|PySpark Read| D[Spark Processing]
+    D -->|Clean & Engineer| E[Silver DataFrame]
+    E -->|write parquet| F[MinIO - Silver Layer]
+    F -->|train/test split| G{Split Data}
+    G -->|80%| H[Training Set]
+    G -->|20%| I[Test Set]
+    H -->|fit| J[Random Forest Classifier]
+    H -->|fit| K[Linear Regression]
+    J -->|save| L[MinIO - Models Layer]
+    K -->|save| L
+    I -->|predict| M[Predictions DataFrame]
+    M -->|write| N[MinIO - Gold Layer]
+    N -->|read & aggregate| O[Visualization & Reporting]
+    O -->|write aggregates| N
 ```
 
 ---
