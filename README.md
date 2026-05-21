@@ -161,9 +161,40 @@ Model dibangun di atas dataframe terdistribusi menggunakan library **Spark MLlib
 ---
 
 ## 💡 Rekomendasi Bisnis Utama (Modul CRM/Marketing ERP)
-1. **Sistem Peringatan Dini (Early Warning System):** Mengintegrasikan model Spark MLlib yang sudah dilatih ke dalam CRM ERP perusahaan agar staf pemasaran bisa memproyeksikan apakah sebuah draf kampanye pemasaran akan profitable sebelum anggaran resmi dibelanjakan.
-2. **Prioritas Anggaran berdasarkan ROI Kanal:** Mengalokasikan sisa anggaran digital secara otomatis ke kanal pemasaran dengan efisiensi tinggi (seperti *Search*) yang memiliki konversi ROI historis stabil.
-3. **Pengendalian Batas Atas CPC/CPL:** Menetapkan alarm batas pengeluaran biaya per klik (CPC) dan biaya per prospek (CPL) agar biaya pemasaran tidak membengkak melampaui ambang batas profitabilitas kampanye.
+
+### 1. Optimasi Alokasi Budget per Channel
+Berdasarkan analisis Avg ROI per channel:
+- **Search (ROI = 1.0134)** dan **Email (ROI = 1.0100)** adalah satu-satunya channel
+  yang secara rata-rata profitable (ROI > 1.0) → jadikan **backbone kampanye utama**
+- Display (0.9993), Influencer (0.9975), dan Social (0.9880) masih di bawah break-even
+  → perlu audit mendalam untuk identifikasi strategi yang bisa dorong ROI > 1.0
+- Revenue share antar channel merata (~19–21%) → pertahankan diversifikasi
+  karena tiap channel memiliki basis audiens yang berbeda
+
+### 2. Pre-screening Kampanye dengan Random Forest Classifier
+Model RF (Accuracy 99.53%) dapat diimplementasikan sebagai sistem pre-screening sebelum
+kampanye diluncurkan:
+- Masukkan karakteristik kampanye (channel, budget, target impressions) ke model
+- Kampanye yang diprediksi **Not Profitable** → revisi strategi atau batalkan
+  sebelum anggaran dikeluarkan
+- **Potensi penghematan hingga 50.1%** dari anggaran yang saat ini terbuang
+  pada kampanye tidak profitable
+
+### 3. Proyeksi Revenue untuk Perencanaan Keuangan
+Model Linear Regression (R² = 0.9998, MAE = $36.15) siap digunakan tim finance untuk:
+- Memproyeksikan estimasi Revenue_USD dari kampanye yang direncanakan
+  berdasarkan input budget dan target metrik
+- Membantu perencanaan arus kas — total revenue aktual $51.0M, profit $25.3M
+- Berpotensi diintegrasikan langsung ke sistem **ERP sebagai modul proyeksi revenue otomatis**
+
+### 4. Fokus pada KPI dengan Feature Importance Tinggi
+Berdasarkan analisis feature importance, **ROAS adalah prediktor terkuat profitabilitas**
+(importance score 69.8%):
+- Prioritaskan monitoring **ROAS secara real-time** sebagai early warning system
+- Kampanye dengan ROAS rendah → hampir dipastikan ROI di bawah break-even
+- Tetapkan **minimum threshold ROAS** sebagai KPI wajib sebelum kampanye dilanjutkan
+- Overall Avg ROI hanya **1.0016** → margin sangat tipis, sensitif terhadap
+  perubahan kecil pada biaya maupun revenue
 
 ---
 *Proyek ini dikembangkan oleh Kelompok 6 Big Data & Analitik, Teknik Komputer Universitas Brawijaya 2026.*
